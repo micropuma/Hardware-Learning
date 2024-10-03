@@ -57,12 +57,14 @@ This part is Section3 and Section4 respectively. There are many details there, s
 The requirements of the IR: (1) could be parsed (2) could be printed (3) could be verified. The essay introduced HIR dialect.
 ### Key point1: Time variables  
 ![](../png/TimingDiagram.png)  
-Distinguish static instance with dynamic instance, and **scheduling means assign time variables to each dynamic instance.**
+Distinguish static instance with dynamic instance, and **scheduling means assign time variables to each dynamic instance.**   
+> So why time variables?    
+Assigning each static point with a constant is not right for schedule. So the author choose to use time variables for each region, which **may change each iteration.** In the region, all the dynamic point is assigned with time in relative to the region time variables.
 ### Key point2: Scheduling
 HIR dialect enables static scheduling. It includes ILP, Loop level parallelisms and Task level parallelisms.  
 ### Key point3: Lower pass
 Another good aspects of the use of mlir, is that **dialect can be mixed up together.**  
-
+> 
 ## References
 1. [ASPLOS顶会论文](https://www.asplos-conference.org/asplos2024/index.html)
 2. [ASPLOS lightning talks](https://www.youtube.com/watch?v=8Ln90EXWZ1Q)
