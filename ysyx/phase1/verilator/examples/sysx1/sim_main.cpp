@@ -3,7 +3,7 @@
 #include <verilated.h>
 #include "Vtop.h"
 
-int main() {
+int main(int argc, char** argv) {
   printf("Hello, ysyx!\n");
 
   VerilatedContext* const contextp = new VerilatedContext;
