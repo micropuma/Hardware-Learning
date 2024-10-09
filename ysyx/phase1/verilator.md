@@ -33,3 +33,4 @@
 ## References  
 1. [verilator官网教学](https://www.veripool.org/verilator/)
 2. [verilator github仓库](https://github.com/verilator/verilator)
+3. [verilator 安装教程路径](https://verilator.org/guide/latest/install.html)
