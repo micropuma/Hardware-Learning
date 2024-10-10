@@ -29,7 +29,7 @@
     verilator --version
     ```
 
-> 注意：verilator的build过程要10分钟左右，并且swapspace要开辟至少10个G的空间。详情查看[swapspace的配置](../../Build_Install.md#交换空间)
+> 注意：verilator的build过程要10分钟左右，并且swapspace要开辟至少10个G的空间。详情查看[swapspace的配置](../Build_Install.md#交换空间)
 ## References  
 1. [verilator官网教学](https://www.veripool.org/verilator/)
 2. [verilator github仓库](https://github.com/verilator/verilator)
