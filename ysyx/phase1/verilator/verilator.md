@@ -36,3 +36,4 @@
 3. [verilator 安装教程路径](https://verilator.org/guide/latest/install.html)
 4. [verilator manual](https://veripool.org/guide/latest/)
 5. [verilator 插件配置](https://soc.ustc.edu.cn/Digital-Pro/lab0/Verilator/)
+6. [verilator 拓展教学](https://www.itsembedded.com/dhd/verilator_1/)
