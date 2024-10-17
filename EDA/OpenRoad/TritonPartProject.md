@@ -21,6 +21,11 @@
     make
     ```
 
+## 输入输出文件及存储数据结构  
+首先明确该项目有多少输入文件：  
+
+### Hypergraph
+
 ## Benchmark
 > 项目维护问题，test文件夹下的.sh文件的可执行文件路径应该修改为：../build/src/openroad run_openroad.tcl | tee run.log
  
@@ -248,16 +253,7 @@ TritonPart项目的参数配置分为：
     核心逻辑是读取传入的五个文件参数后，构造HyperGraph类。  
     ```cpp 
     // Build the original hypergraph first
-    original_hypergraph_ = std::make_shared<Hypergraph>(vertex_dimensions_,
-                                                        hyperedge_dimensions_,
-                                                        placement_dimensions_,
-                                                        hyperedges_,
-                                                        vertex_weights_,
-                                                        hyperedge_weights_,
-                                                        fixed_attr_,
-                                                        community_attr_,
-                                                        placement_attr_,
-                                                        logger_);
+    original_hypergraph_ = std::make_shared<Hypergraph>(vertex_dimensions_, hyperedge_dimensions_, placement_dimensions_, hyperedges_, vertex_weights_, hyperedge_weights_, fixed_attr_, community_attr_, placement_attr_, logger_);
     ```
 2. 核心步骤：`MultiLevelPartition()`  
     跳转至[MultiLevel解读](#multilevel算法解读)
@@ -559,6 +555,8 @@ return best_solution;
 ```
 
 ### `VcycleRefinement()`方法
+
+
 
 ## 论文中提到的算法源码解析  
 ### `CutOverlayILPPart`算法  
