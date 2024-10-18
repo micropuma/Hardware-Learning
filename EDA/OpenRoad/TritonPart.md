@@ -19,6 +19,32 @@
 类比机器学习领域的单词嵌入，此处的graph中的每个vertex通过**embedding**的方式将vertex映射到高维度空间中（利用预先训练好的kernel函数？）。  
 在最先提出用embedding做超图分割的论文中，是使用机器学习来学习出合适的embedding映射函数。
 
+## 效果
+运行测试用例有三个来源：
+1. OpenROAD项目自带测试用例
+2. TritonPart写的玩具用例
+3. Titan23 benchmark  
+
+`OpenROAD自带测试用例`
+1. min-cut测试用例  
+    * 二分
+    * 820886顶点，821274超边  
+    * 用时937秒
+2. embedding测试用例  
+    * 带embedding因素
+    * 820886顶点，821274超边 
+    * 用时1036秒
+3. timing aware测试用例
+    * 
+
+`玩具测试用例`
+1. min-cut测试用例  
+    * 二分
+    * 111221定点，139557超边
+    * 用时262秒
+
+`Titan23 benchmark`
+
 
 ## References
 1. [TritonPart论文](https://ieeexplore.ieee.org/abstract/document/10323975)
