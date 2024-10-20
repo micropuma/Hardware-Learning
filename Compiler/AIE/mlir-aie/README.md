@@ -1,9 +1,22 @@
 # MLIR-AIE 
-## AI Engine architecture  
+## [AI Engine architecture](./arch.md)  
+This subrepo contains descritpions of AMD AI engine architecture.
 
+## [MLIR-AIE tutorial](./tutorial.md)
+This subrepo is simply a guideline for [MLIR-AIE tutorial](./tutorial.md). 
+1. Intro to MLIR and AIEngine  
+2. Physical MLIR-AIE
+3. Host Code, Simulation and Performance Counters
+4. Logical MLIR-AIE: Communication  
+5. Advanced Topics
 
-## Highlight of MLIR-AIE framework  
+## Work Flow of MLIR-AIE  
+![](../../../png/AIengine3.png)
 
+* [Physical MLIR-AIE](./Physical_mlir)
+
+## Future of MLIR-AIE 
+![](../../../png/AIengine2.png)
 
 ## References 
 1. [MLIR-AIE talk](https://www.c4ml.org/)
