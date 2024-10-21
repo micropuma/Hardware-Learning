@@ -13,7 +13,7 @@ This subrepo is simply a guideline for [MLIR-AIE tutorial](./tutorial.md).
 ## Work Flow of MLIR-AIE  
 ![](../../../png/AIengine3.png)
 
-* [Physical MLIR-AIE](./Physical_mlir)
+* [Physical MLIR-AIE](./Physical_mlir.md)
 
 ## Future of MLIR-AIE 
 ![](../../../png/AIengine2.png)
