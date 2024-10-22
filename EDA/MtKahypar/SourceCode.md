@@ -281,11 +281,134 @@ static void improve(mt_kahypar_partitioned_hypergraph_t partitioned_hg, Context&
         ```
 
 ## Partition策略解读  
-### `Multilevel<TypeTraits>::partition`
+### 1. `Multilevel<TypeTraits>::partition()`
+该函数定义在`/mt-kahypar/multilevel.h`中，在`/mt-kahypar/multilevel.cpp`中。
+主函数是：  
+```cpp  
+template<typename TypeTraits>
+typename Multilevel<TypeTraits>::PartitionedHypergraph Multilevel<TypeTraits>::partition(
+  Hypergraph& hypergraph, const Context& context, const TargetGraph* target_graph) {
+    PartitionedHypergraph partitioned_hg = multilevel_partitioning<TypeTraits>(hypergraph, context, target_graph, false);
 
-### `RecursiveBipartitioning<TypeTraits>::partition`
+    // ################## V-CYCLES ##################
+    if ( context.partition.num_vcycles > 0 && context.type == ContextType::main ) {
+        partitionVCycle(hypergraph, partitioned_hg, context, target_graph);
+    }
 
-### `DeepMultilevel<TypeTraits>::partition`
+    return partitioned_hg;
+}
+```   
+该方法先是调用`multilevel_partitioning()`这个template方法，完成多级分区，然后调用`multilevel_partitioning()`完成V-cycle，在已有的partition上进一步优化。
+  
+1. 粗化过程：  
+    ```cpp   
+    std::unique_ptr<ICoarsener> coarsener = CoarsenerFactory::getInstance().createObject(
+            context.coarsening.algorithm, utils::hypergraph_cast(hypergraph),
+            context, uncoarsening::to_pointer(uncoarseningData));
+    coarsener->coarsen();
+    ```   
+    多级分区函数调用template工厂方法得到对应的coarsener实例，再调用`i_coarsener.h`中的`coarsen()`函数：
+    ```cpp
+    void coarsen() {
+        initialize();
+        bool should_continue = true;
+        // Coarsening algorithms proceed in passes where each pass computes a clustering
+        // of the nodes and subsequently contracts it. Each pass induces one level of the
+        // hierarchy. The coarsening algorithms proceeds until the number of nodes equals
+        // a predefined contraction limit (!shouldNotTerminate) or the number of nodes could
+        // not be significantly reduced within one coarsening pass (should_continue).
+        while ( shouldNotTerminate() && should_continue ) {
+        should_continue = coarseningPass();
+        }
+        terminate();
+    }
+    ```
+2. initial parition阶段     
+    ```cpp     
+    // ################## INITIAL PARTITIONING ##################
+    io::printInitialPartitioningBanner(context);
+    timer.start_timer("initial_partitioning", "Initial Partitioning");
+    PartitionedHypergraph& phg = uncoarseningData.coarsestPartitionedHypergraph();
+    ```  
+    上述的`coarsestPartitionedHypergraph()`就是获取最粗化情况下的graph。  
+
+    ```cpp   
+    if ( !is_vcycle ) {
+        DegreeZeroHypernodeRemover<TypeTraits> degree_zero_hn_remover(context);
+        if ( context.initial_partitioning.remove_degree_zero_hns_before_ip ) {
+            degree_zero_hn_remover.removeDegreeZeroHypernodes(phg.hypergraph());
+        }
+
+        Context ip_context(context);
+        ip_context.type = ContextType::initial_partitioning;
+        ip_context.refinement = context.initial_partitioning.refinement;
+        disableTimerAndStats(context);
+        if ( context.initial_partitioning.mode == Mode::direct ) {
+            // The pool initial partitioner consist of several flat bipartitioning
+            // techniques. This case runs as a base case (k = 2) within recursive bipartitioning
+            // or the deep multilevel scheme.
+            ip_context.partition.verbose_output = false;
+            Pool<TypeTraits>::bipartition(phg, ip_context);
+        } else if ( context.initial_partitioning.mode == Mode::recursive_bipartitioning ) {
+            RecursiveBipartitioning<TypeTraits>::partition(phg, ip_context, target_graph);
+        } else if ( context.initial_partitioning.mode == Mode::deep_multilevel ) {
+            ASSERT(ip_context.partition.objective != Objective::steiner_tree);
+            ip_context.partition.verbose_output = false;
+            DeepMultilevel<TypeTraits>::partition(phg, ip_context);
+        } else {
+            throw InvalidParameterException("Undefined initial partitioning algorithm");
+        }
+    ```  
+    非V-CYCLE情况下，根据选择的parition策略，选择在最粗化情况下的初始划分算法。  
+    V-CYCLE情况下，根据已有的partition，在每个分块内部做partition：  
+    ```cpp   
+    // When performing a V-cycle, we store the block IDs
+    // of the input hypergraph as community IDs
+    const Hypergraph& hypergraph = phg.hypergraph();
+    phg.doParallelForAllNodes([&](const HypernodeID hn) {
+        const PartitionID part_id = hypergraph.communityID(hn);
+        ASSERT(part_id != kInvalidPartition && part_id < context.partition.k);
+        ASSERT(phg.partID(hn) == kInvalidPartition);
+        phg.setOnlyNodePart(hn, part_id);
+    });
+    phg.initializePartition();
+
+    #ifdef KAHYPAR_ENABLE_STEINER_TREE_METRIC
+    if ( context.partition.objective == Objective::steiner_tree ) {
+        phg.setTargetGraph(target_graph);
+        timer.start_timer("one_to_one_mapping", "One-To-One Mapping");
+        // Try to improve current mapping
+        InitialMapping<TypeTraits>::mapToTargetGraph(phg, *target_graph, context);
+        timer.stop_time("one_to_one_mapping");
+    }
+    #endif
+    ```  
+    V-CYCLE的partition做了如下几步：  
+    * 利用并行处理方式，对每个节点，获取其community id，表示之前的partition分区结果。
+    * 调用`initializePartition()`，该函数底层有如下步骤：  
+        1. `iniitalizeBlockWeights()`负责遍历所有节点，并计算节点所属分区综合  
+        2. 用tbb::parallel_for提高处理效率。  
+3. uncoarsen
+    ```cpp   
+    // ################## UNCOARSENING ##################
+    io::printLocalSearchBanner(context);
+    timer.start_timer("refinement", "Refinement");
+    std::unique_ptr<IUncoarsener<TypeTraits>> uncoarsener(nullptr);
+    if (uncoarseningData.nlevel) {
+      uncoarsener = std::make_unique<NLevelUncoarsener<TypeTraits>>(
+        hypergraph, context, uncoarseningData, target_graph);
+    } else {
+      uncoarsener = std::make_unique<MultilevelUncoarsener<TypeTraits>>(
+        hypergraph, context, uncoarseningData, target_graph);
+    }
+    partitioned_hg = uncoarsener->uncoarsen();
+    ```  
+    根据上下文参数，选择是多层还是单层的细化器，并做细化操作。
+
+## 粗化，初始划分，细化的最底层代码   
+### coarsen phase  
+`coarsen()`调用`coarseningPassImpl()`，具体调用的函数根据传入的模版参数而定。这里以`multilevel_coarener.h`为例。  
+
 
 ## References  
 1. [MtKahyPar官方github仓库](https://github.com/kahypar/mt-kahypar)  
