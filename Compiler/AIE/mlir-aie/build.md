@@ -47,3 +47,23 @@
 9. 检查build是否成功:  
     可以通过`echo $PATH`看环境。`aie-opt --version`等check
 
+## Bug修复  
+### MLIR-PYTHON_BINDING问题  
+在学习tutorial-1中，需要运行aiecc.py，发现如下报错：  
+![](../../../png/pythonbind-error.png)
+
+查看mlir-aie的issue，发现mlir-aie已经将mlir-python-extras从repo中移除，转而用添加依赖的方式安装mlir-python-extras。具体见[Use mlir-python-extras as a dependency](https://github.com/Xilinx/mlir-aie/pull/1828)。因此有两种方式来解决该问题：  
+1. 回退版本，变为extras在repo中。回退到fc6dca2a即可。  
+2. 检查构建requirements中的依赖配置，重新配置虚拟环境。  
+
+我选择重新构建，发现调用的`setup_python_packages.sh`中，pip install了`requirements.txt`以及`requirements_extra.txt`，而`mlir-python-extras`在`requirements_extra.txt`中。  
+修改其中的https路径为ssh路径即可。  
+```txt   
+ # This can't go in the normal requirements file because the way the wheels build parses requirements.txt
+ # does not support github packages
+git+ssh://git@github.com/makslevental/mlir-python-extras.git@b2b8d72
+```   
+
+在新的环境下运行tutorial-1，可以看到如下结果：    
+![](../../../png/mlir-fix1.png)
+
