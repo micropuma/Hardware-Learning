@@ -67,3 +67,6 @@ git+ssh://git@github.com/makslevental/mlir-python-extras.git@b2b8d72
 在新的环境下运行tutorial-1，可以看到如下结果：    
 ![](../../../png/mlir-fix1.png)
 
+### 生成面向aarch架构的可执行，clang报没有target  
+
+
