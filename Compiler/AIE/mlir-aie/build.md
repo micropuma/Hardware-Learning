@@ -68,5 +68,6 @@ git+ssh://git@github.com/makslevental/mlir-python-extras.git@b2b8d72
 ![](../../../png/mlir-fix1.png)
 
 ### 生成面向aarch架构的可执行，clang报没有target  
+这个错误比较容易修复，关键问题是我自己从llvm-aie官网下的weel包，只支持aie，x86，没有支持我们需要的aarch64。只需要替换llvm-aie为源码，并做源码编译即可解决。
 
 
