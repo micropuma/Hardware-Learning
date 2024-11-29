@@ -119,6 +119,18 @@ the code should be turn into `.vscode/settings.json` and `.vscode/launch.json`.
 }
 ```
 then we can use vscode gui to debug our mlir codes.
+<font color = pink>something interesting happened: debugger can't read args from launch.json, so we need to copy args into settings.json</font>. Following is the way to solve.
+
+```shell
+"cmake.debugConfig": {
+    "args": [
+            "/home/douliyang/large/mlir-workspace/aie-compiler/test/Conversion/scalar-memref.mlir",  // 输入的文件
+            "--polyaie-affine-preprocess",
+            "--affine-super-vectorize",
+            "--canonicalize",
+    ]
+}
+```
 
 ## Advance cmake topic
 refer to [modern cmake](https://hsf-training.github.io/hsf-training-cmake-webpage/)
