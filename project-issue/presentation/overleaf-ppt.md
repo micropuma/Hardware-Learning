@@ -83,6 +83,19 @@ Left to the interested reader.
 ```
 refer to [overleaf beamer doc](https://www.overleaf.com/learn/latex/Beamer#Reference_guide) for further knowledge.
 
+## tricks
+### control
+the following code support content control:
+```latex
+\begin{frame}{MLIR框架}
+    \begin{itemize}[<+-| alert@+>] 
+        \item 输入内容
+        \item \includegraphics[width=0.2\linewidth]{pic/vectordialect.png} % 插入图片
+        \item 输入内容
+    \end{itemize}
+\end{frame}
+```
+
 
 ## References
 1. [Overleaf-ppt talk](https://www.youtube.com/watch?v=rx7wwtmFlD8&t=18s)
